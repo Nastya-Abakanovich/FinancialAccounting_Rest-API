@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Moment from 'moment';
-import { FiTrash, FiEdit } from 'react-icons/fi';
+import { FiTrash, FiEdit, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import './App.css';
 
 // class InputForm extends React.Component {
@@ -35,26 +35,71 @@ class DataTable extends React.Component {
   constructor(props){
     super(props);
     var items = props.items;
-    this.state = {items: items};
+    this.state = {items: items, itemsWithoutSorting: items, sortField: "", sortOrder: "asc"};
 } 
 
+handleSortingChange (newField) {
+  let newSortOrder = "";
+  if (newField === this.state.sortField) {
+    if (this.state.sortOrder === "asc") {
+      newSortOrder = "desc";
+    }
+    else {
+      newSortOrder = "asc";
+      newField = "";
+    }
+  } else {
+    newSortOrder = "asc";
+  }
+  this.handleSorting(newField, newSortOrder);
+  this.setState({sortField: newField, sortOrder: newSortOrder});  
+};
+
+handleSorting(newField, newSortOrder) {
+  if (newField !== "") {
+    let sorted = this.state.itemsWithoutSorting.slice();
+    sorted = sorted.sort((a, b) => {
+    return (
+     a[newField].toString().localeCompare(b[newField].toString(), "ru", {
+      numeric: true,
+     }) * (newSortOrder === "asc" ? 1 : -1)
+    );
+   });
+   this.setState({items: sorted});
+  } else {
+    this.setState({items: this.state.itemsWithoutSorting});
+  }
+ };
+
+viewSortingRow(currField) {
+  if (this.state.sortField === currField) {
+    if (this.state.sortOrder === 'asc')
+      return <FiChevronDown />;
+    else 
+    return <FiChevronUp />;
+  } else {
+    return "";
+  }
+};
+ 
   render() {
     return (
       <table class="table_sort">  
         <thead>
           <tr>
-            <td width="130px">Сумма</td>
-            <td width="150px">Категория</td>
-            <td width="400px">Описание</td>
-            <td width="100px">Дата</td>
-            <td width="100px">Тип</td>
-            <td width="100px"></td>
+            <td width="130px" onClick={() => this.handleSortingChange("sum")}>Сумма {this.viewSortingRow("sum")}</td>
+            <td width="150px" onClick={() => this.handleSortingChange("category")}>Категория {this.viewSortingRow("category")}</td>
+            <td width="400px" onClick={() => this.handleSortingChange("description")}>Описание {this.viewSortingRow("description")}</td>
+            <td width="100px" onClick={() => this.handleSortingChange("date")}>Дата {this.viewSortingRow("date")}</td>
+            <td width="100px" onClick={() => this.handleSortingChange("income")}>Тип {this.viewSortingRow("income")}</td>
+            <td width="100px">Файл</td>
             <td width="40px"></td>
             <td width="40px"></td>
           </tr> 
         </thead>
-        <tbody>              
-          {this.state.items.map((item) => ( 
+        <tbody>       
+        {/* spendingId={item.spending_id}        */}
+          {this.state.items.map((item) => (  
             <tr>       
             <td>{item.sum} BYN</td>
             <td>{item.category}</td>
