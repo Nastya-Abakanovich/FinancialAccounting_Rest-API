@@ -38,25 +38,145 @@ app.use(express.static('public'));
 // app.use('/uploads', express.static(__dirname + 'public/uploads'));
 
 
-app.get('/api', (req, res) => {
+// app.get('/api', (req, res) => {
+//     connection.query('SELECT * FROM Spending', function (err, result) {
+//         if (err) throw err;
+//         res.json({"items": result});
+//     });
+    
+// });
+
+app.get("/api", function(req, res){      
     connection.query('SELECT * FROM Spending', function (err, result) {
         if (err) throw err;
-        res.json({"items": result});
+        return res.status(200).json({"items": result});
     });
-    
 });
 
-// app.get('/api/getRequest', (req, res) => {
-//  //API logic
-// });
+// удаление пользователя по id
+app.delete("/api/:id", function(req, res){
+       
+    const id = req.params.id;
+    connection.query('DELETE FROM Spending WHERE spending_id=' + id 
+                        + ' AND user_id=1', function (err, result) {
+        if (err) throw err;
+        if (result.affectedRows === 0)
+            res.status(404).send({ message: 'Unable delete item.' })
+        else
+            res.status(200).send({ message: 'Item deleted.' })        
+    });
+});
 
-// app.post('/api/postRequest', (req, res) => {
-//  //API logic
-// });
+// app
+//   .route('/api')
+//   .get((req, res) => {
+//     // if (req.query.id) {
+//     //   if (req.users.hasOwnProperty(req.query.id))
+//     //     return res
+//     //       .status(200)
+//     //       .send({ data: req.users[req.query.id] })
+//     //   else
+//     //     return res
+//     //       .status(404)
+//     //       .send({ message: 'User not found.' })
+//     // } else if (!req.users)
+//     //   return res
+//     //     .status(404)
+//     //     .send({ message: 'Users not found.' })
 
-// app.get('*', (req,res) => {
-//  res.sendFile(path.join(__dirname, 'build/index.html'));
-// });
+//     connection.query('SELECT * FROM Spending', function (err, result) {
+//         if (err) throw err;
+//         return res.status(200).json({"items": result});
+//     });
+
+//     // return res.status(200).send({ data: req.users })
+//   })
+//   .post((req, res) => {
+//     if (req.body.user && req.body.user.id) {
+//       if (req.users.hasOwnProperty(req.body.user.id))
+//         return res
+//           .status(409)
+//           .send({ message: 'User already exists.' })
+
+//       req.users[req.body.user.id] = req.body.user
+
+//       fs.writeFile(
+//         file,
+//         JSON.stringify(req.users),
+//         (err, response) => {
+//           if (err)
+//             return res
+//               .status(500)
+//               .send({ message: 'Unable create user.' })
+
+//           return res
+//             .status(200)
+//             .send({ message: 'User created.' })
+//         }
+//       )
+//     } else
+//       return res
+//         .status(400)
+//         .send({ message: 'Bad request.' })
+//   })
+//   .put((req, res) => {
+//     if (req.body.user && req.body.user.id) {
+//       if (!req.users.hasOwnProperty(req.body.user.id))
+//         return res
+//           .status(404)
+//           .send({ message: 'User not found.' })
+
+//       req.users[req.body.user.id] = req.body.user
+
+//       fs.writeFile(
+//         file,
+//         JSON.stringify(req.users),
+//         (err, response) => {
+//           if (err)
+//             return res
+//               .status(500)
+//               .send({ message: 'Unable update user.' })
+
+//           return res
+//             .status(200)
+//             .send({ message: 'User updated.' })
+//         }
+//       )
+//     } else
+//       return res
+//         .status(400)
+//         .send({ message: 'Bad request.' })
+//   })
+//   .delete((req, res) => {
+//     console.log(req);
+//     // if (req.query.id) {
+//     //   if (req.users.hasOwnProperty(req.query.id)) {
+//     //     delete req.users[req.query.id]
+
+//     //     fs.writeFile(
+//     //       file,
+//     //       JSON.stringify(req.users),
+//     //       (err, response) => {
+//     //         if (err)
+//     //           return res
+//     //             .status(500)
+//     //             .send({ message: 'Unable delete user.' })
+
+//     //         return res
+//     //           .status(200)
+//     //           .send({ message: 'User deleted.' })
+//     //       }
+//     //     )
+//     //   } else
+//     //     return res
+//     //       .status(404)
+//     //       .send({ message: 'User not found.' })
+//     // } else
+//       return res
+//         .status(400)
+//         .send({ message: 'Bad request.' })
+//   })
+
 
 app.listen(port, () => {
  console.log('Listening on port ', port);

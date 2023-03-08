@@ -35,56 +35,66 @@ class DataTable extends React.Component {
   constructor(props){
     super(props);
     var items = props.items;
-    this.state = {items: items, itemsWithoutSorting: items, sortField: "", sortOrder: "asc"};
-} 
+    this.state = {items: items, sortField: "", sortOrder: "asc"};
+  }
 
-handleSortingChange (newField) {
-  let newSortOrder = "";
-  if (newField === this.state.sortField) {
-    if (this.state.sortOrder === "asc") {
-      newSortOrder = "desc";
-    }
-    else {
+  componentWillReceiveProps(nextProps) {
+    if (this.state.sortField !== "") {
+      let sorted = nextProps.items.slice();
+      sorted = sorted.sort((a, b) =>    
+        a[this.state.sortField].toString().localeCompare(b[this.state.sortField].toString(), "ru", {
+          numeric: true,
+        }) * (this.state.sortOrder === "asc" ? 1 : -1)        
+      );
+      this.setState({items: sorted}); }
+    else
+      this.setState({items: nextProps.items});
+  }
+
+  handleSortingChange (newField) {
+    let newSortOrder = "";
+    if (newField === this.state.sortField) {
+      if (this.state.sortOrder === "asc") {
+        newSortOrder = "desc";
+      }
+      else {
+        newSortOrder = "asc";
+        newField = "";
+      }
+    } else {
       newSortOrder = "asc";
-      newField = "";
     }
-  } else {
-    newSortOrder = "asc";
-  }
-  this.handleSorting(newField, newSortOrder);
-  this.setState({sortField: newField, sortOrder: newSortOrder});  
-};
+    this.handleSorting(newField, newSortOrder);
+    this.setState({sortField: newField, sortOrder: newSortOrder});  
+  };
 
-handleSorting(newField, newSortOrder) {
-  if (newField !== "") {
-    let sorted = this.state.itemsWithoutSorting.slice();
-    sorted = sorted.sort((a, b) => {
-    return (
-     a[newField].toString().localeCompare(b[newField].toString(), "ru", {
-      numeric: true,
-     }) * (newSortOrder === "asc" ? 1 : -1)
-    );
-   });
-   this.setState({items: sorted});
-  } else {
-    this.setState({items: this.state.itemsWithoutSorting});
-  }
- };
+  handleSorting(newField, newSortOrder) {
+    if (newField !== "") {
+      let sorted = this.props.items.slice();
+      sorted = sorted.sort((a, b) => 
+        a[newField].toString().localeCompare(b[newField].toString(), "ru", 
+        {numeric: true,}) * (newSortOrder === "asc" ? 1 : -1)
+      );
+      this.setState({items: sorted});
+    } else {
+      this.setState({items: this.props.items});
+    }
+  };
 
-viewSortingRow(currField) {
-  if (this.state.sortField === currField) {
-    if (this.state.sortOrder === 'asc')
-      return <FiChevronDown />;
-    else 
-    return <FiChevronUp />;
-  } else {
-    return "";
-  }
-};
- 
+  viewSortingRow(currField) {
+    if (this.state.sortField === currField) {
+      if (this.state.sortOrder === 'asc')
+        return <FiChevronDown />;
+      else 
+      return <FiChevronUp />;
+    } else {
+      return "";
+    }
+  };
+
   render() {
     return (
-      <table class="table_sort">  
+      <table className="table_sort">  
         <thead>
           <tr>
             <td width="130px" onClick={() => this.handleSortingChange("sum")}>Сумма {this.viewSortingRow("sum")}</td>
@@ -98,16 +108,15 @@ viewSortingRow(currField) {
           </tr> 
         </thead>
         <tbody>       
-        {/* spendingId={item.spending_id}        */}
           {this.state.items.map((item) => (  
-            <tr>       
+            <tr key={item.spending_id}>       
             <td>{item.sum} BYN</td>
             <td>{item.category}</td>
             <td>{item.description}</td>
             <td>{Moment(item.date).format('DD.MM.YYYY')}</td>
             <td>{item.income ? "Доходы" : "Расходы"}</td>
             <td>{item.filename}</td>
-            <td><FiTrash /></td>
+            <td><FiTrash onClick={() => this.props.onClickDelete(item.spending_id)} /></td>
             <td><FiEdit /></td> 
             </tr>  
           ))} 
@@ -121,10 +130,16 @@ class MainPage extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { items: [{sum: 70, id:1}, {sum: 20, id:2}], sum: 10 };
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    // this.state = { backendData: []};
+    // this.handleChange = this.handleChange.bind(this);
+    // this.handleSubmit = this.handleSubmit.bind(this);
   }
+
+  // useEffect(() => {
+  //   fetch("/api", {method: "GET"})
+  //     .then(response => response.json())
+  //     .then(data => { setBackendData(data) })
+  // }, [])
 
   // renderInputForm() {
   //   return (
@@ -136,73 +151,96 @@ class MainPage extends React.Component {
   //   );
   // }
 
-  handleChange(e) {
-    this.setState({ sum: e.target.value });
-  }
+  // handleChange(e) {
+  //   this.setState({ sum: e.target.value });
+  // }
 
-  handleSubmit(e) {
-    e.preventDefault();
-    if (this.state.sum === 0) {
-      return;
-    }
-    const newItem = {
-      sum: this.state.sum,
-      id: Date.now()
-    };
-    this.setState(state => ({
-      items: state.items.concat(newItem),
-      sum: 0
-    }));
-  }
+  // handleSubmit(e) {
+  //   e.preventDefault();
+  //   if (this.state.sum === 0) {
+  //     return;
+  //   }
+  //   const newItem = {
+  //     sum: this.state.sum,
+  //     id: Date.now()
+  //   };
+  //   this.setState(state => ({
+  //     items: state.items.concat(newItem),
+  //     sum: 0
+  //   }));
+  // }
+
+//   deleteItem = async (id) => {
+//     alert('Delete1');
+//     await fetch('/api/${id}', { method: 'DELETE',})
+//     .then((response) => {
+//        if (response.status === 200) {
+//         setBackendData(
+//           backendData.filter((data) => {
+//                 return data.spending_id !== id;
+//              })
+//           );
+//        } else {
+//           alert('Delete2');
+//           return;
+//        }
+//   });
+// };
 
   render() {
     return (
-      <div class="wrapper">
-        <div class="content">
-          {/* {this.renderInputForm()} */}
+      <div className="wrapper">
+        {/* <div className="content">
+          {this.renderInputForm()} */}
+          {/* {(typeof backendData.items !== 'undefined') ? (
           <DataTable 
-          // sums={this.props.sums}
+            // items={backendData.items}
+            // onClickDelete={this.deleteItem}
           />
-        </div> 
-        <footer>Copyright &copy; 2023 | Made by Abakanovich</footer>
+        ) : (
+          <p>Loading...</p> 
+        )} */}
+        {/* </div> 
+        <footer>Copyright &copy; 2023 | Made by Abakanovich</footer> */}
       </div>
     );
   }
 }
 
 function App() {
-    const [backendData, setBackendData] = useState([{}]);
+  const [items, setItems] = useState([]);
   
     useEffect(() => {
-      fetch("/api").then(
-        response => response.json()
-      ).then(
-        data => {
-          setBackendData(data)
-        }
-      )
+      fetch("/api", {method: "GET"})
+        .then(response => response.json())
+        .then(data => { setItems(data.items) })
     }, [])
+
+    const deleteItem = async (id) => {
+       await fetch('/api/' + id,{ method: 'DELETE',})
+        .then((response) => {
+            if (response.status === 200) {
+             setItems(actualItems => actualItems.filter(data => data.spending_id !== id));
+            }
+        }); 
+      };
   
     return (
-      <div>
-        {/* {(typeof backendData.items === 'undefined') ? (
-          <p>Loading...</p>
-        ) : (
-          backendData.items.map((item, i) => (
-            <p key={i}>{item.user_id}, {item.spending_id}, {item.sum}, {item.date}, {item.category}, {item.description}, {item.income}, {item.filename}</p>
-          ))  
-        )} */}
-        {(typeof backendData.items !== 'undefined') ? (
+      <div className="wrapper">
+        <div className="content">
+          {/* {this.renderInputForm()} */}
+          {(items.length !== 0) ? (
           <DataTable 
-            items={backendData.items}
-          />
+            items={items}
+            onClickDelete={deleteItem}
+          />          
         ) : (
           <p>Loading...</p> 
-        )}
-          
+        )}  
+        </div> 
+        <footer>Copyright &copy; 2023 | Made by Abakanovich</footer>   
       </div>
     )
   }
-  
-  export default App;
-  
+
+  export default App; 
