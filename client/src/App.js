@@ -36,7 +36,7 @@ class InputForm extends React.Component {
         category: nextProps.updItem.category, 
         description: nextProps.updItem.description, 
         date: this.setDefaultDate(nextProps.updItem.date), 
-        type: nextProps.updItem.income === 1 ? 'income' : "expenses", 
+        type: nextProps.updItem.income === 1 ? "income" : "expenses", 
         spending_id: nextProps.updItem.spending_id,
         filename: null},
       isAdd: false});
@@ -56,10 +56,11 @@ class InputForm extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault();
+    
     if (this.state.isAdd) {
       this.props.addItems(this.state.body, this.state.selectedFile);
     } else {
-        this.props.updateItems(this.state.body, this.state.selectedFile);
+      this.props.updateItems(this.state.body, this.state.selectedFile);
     }
 
     this.setState({
@@ -87,7 +88,7 @@ class InputForm extends React.Component {
               checked={this.state.body.type === "expenses"} onChange={this.onChange}/>      
             <label htmlFor="radio-1">Расходы</label>  
             <input type="radio" id="radio-2" name="type" value="income" 
-              hecked={this.state.body.type === "income"} onChange={this.onChange}/>      
+              checked={this.state.body.type === "income"} onChange={this.onChange}/>      
             <label htmlFor="radio-2">Доходы</label>
             <input type="file" name="fileToUpload" key={this.state.inputKey} onChange={this.onPickedFile}/>
             <input type="submit" value="Добавить" /> 
@@ -281,6 +282,7 @@ function App() {
     })
     .then((response) => {
       response.json();
+      setUpdItem(null);
       if (response.status === 200) {          
         if (selectedFile !== null)
           setItems(prevItems => prevItems.map(item => item.spending_id === body.spending_id ? 
