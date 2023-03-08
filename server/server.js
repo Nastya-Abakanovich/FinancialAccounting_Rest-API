@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser'); 
 const mysql = require("mysql2");
+const multer = require('multer');
 const dbConfig = require("./config/db.config.js");
 
 // const formidable = require('formidable');
@@ -26,8 +27,17 @@ connection.connect(function(err){
 
 const app = express();
 const port = 5000;
-// const urlencodedParser = express.urlencoded({extended: false});
-// const sorting_info = ["spending_id", true]; 
+const urlencodedParser = express.urlencoded({extended: false});
+
+const storage = multer.diskStorage ({
+    destination: (req, file, cb) =>{
+        cb(null, "public/uploads");
+    },
+    filename: (req, file, cb) =>{
+        cb(null, file.originalname);
+    }
+})
+const upload = multer({storage: storage})
 
 
 app.use(bodyParser.json());
@@ -45,6 +55,14 @@ app.use(express.static('public'));
 //     });
     
 // });
+
+app.get('/api/:filename', (req, res) => {
+
+    res.status(200).sendFile(__dirname + '/public/uploads/' + req.params.filename, (err, file) => {
+        if (err) res.sendStatus(400);
+        res.end(file);
+      });
+});
 
 app.get("/api", function(req, res){      
     connection.query('SELECT * FROM Spending', function (err, result) {
@@ -67,9 +85,10 @@ app.delete("/api/:id", function(req, res){
     });
 });
 
-app.post("/api", function (req, res) {
+app.post("/api", upload.single('fileToUpload'), urlencodedParser, function (req, res) {
       
     console.log(req.body);
+    console.log(req);
     if(!req.body) return res.sendStatus(400);
       
 
@@ -81,15 +100,11 @@ app.post("/api", function (req, res) {
     req.body.category,
     req.body.description,
     req.body.type == 'income',
-    null
-    // request.file ? request.file.originalname : null
+    req.file ? req.file.originalname : null
     ], function (err, result) {
         if (err) throw err;
         res.status(200).json({"spending_id": result.insertId});
-      //  file_rename(request, 1, result.insertId);
     }); 
-
-
 });
 
 // app
