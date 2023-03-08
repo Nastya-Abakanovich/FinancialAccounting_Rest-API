@@ -67,6 +67,31 @@ app.delete("/api/:id", function(req, res){
     });
 });
 
+app.post("/api", function (req, res) {
+      
+    console.log(req.body);
+    if(!req.body) return res.sendStatus(400);
+      
+
+    connection.query('INSERT Spending(user_id, sum, date, category, description, income, filename) VALUES (?,?,?,?,?,?,?)',
+    [
+    1,
+    req.body.sum * 100,
+    req.body.date,
+    req.body.category,
+    req.body.description,
+    req.body.type == 'income',
+    null
+    // request.file ? request.file.originalname : null
+    ], function (err, result) {
+        if (err) throw err;
+        res.status(200).json({"spending_id": result.insertId});
+      //  file_rename(request, 1, result.insertId);
+    }); 
+
+
+});
+
 // app
 //   .route('/api')
 //   .get((req, res) => {
